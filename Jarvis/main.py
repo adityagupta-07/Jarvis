@@ -74,7 +74,7 @@ def processCommand(c):
         subprocess.Popen(["intellij-idea-ultimate"])
     elif "delete" in c.lower():
         result = subprocess.run(["/home/aditya/Scripts/script.sh"], capture_output=True, text=True)
-        print(result)
+        print(result)           
     elif c.lower().startswith("play"):
         song = c.lower().split(" ")[1]
         link = musicLibrary.music[song]

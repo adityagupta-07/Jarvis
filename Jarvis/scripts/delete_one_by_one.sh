@@ -8,7 +8,7 @@ while read -r item <&3; do # read means "read until \n." and store that in item 
     # read -p "$(basename "$item") should be deleted? (yes/no): " answer
     echo -n "$(basename "$item") should be deleted? (yes/no): "
     read answer
-    if [ "$answer" == "yes" ]; then
+    if [ "$answer" == "yes" ]; then 
         counter=$((counter + 1))
         rm -rf "$item"
         echo "Deleted: $(basename "$item")"
