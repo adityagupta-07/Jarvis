@@ -18,7 +18,7 @@ while read -r item <&3; do # read means "read until \n." and store that in item 
         echo "Deletion stopped"
         break
     else
-        echo "Deletion stopped"
+        echo "Command Unclear. Deletion stopped"
         break
     fi
 done 3<<< "$result" 
