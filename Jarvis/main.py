@@ -9,6 +9,7 @@ import musicLibrary
 from openai import OpenAI
 from gtts import gTTS
 import pygame
+import subprocess
 
 @contextmanager
 def suppress_stderr():
@@ -65,6 +66,15 @@ def processCommand(c):
         webbrowser.open("https://youtube.com")
     elif "open facebook" in c.lower():
         webbrowser.open("https://facebook.com")
+    elif "open brave" in c.lower():
+        subprocess.Popen(["brave-browser"])
+    elif "open chrome" in c.lower():
+        subprocess.Popen(["google-chrome"])
+    elif "open intelli j" in c.lower():
+        subprocess.Popen(["intellij-idea-ultimate"])
+    elif "delete" in c.lower():
+        result = subprocess.run(["/home/aditya/Scripts/script.sh"], capture_output=True, text=True)
+        print(result)
     elif c.lower().startswith("play"):
         song = c.lower().split(" ")[1]
         link = musicLibrary.music[song]
@@ -80,7 +90,8 @@ def processCommand(c):
 
             # Print the headlines
             for article in articles:
-                speak(article['title'])
+                # speak(article['title'])
+                print(article['title'])
     else:
         # Let openai handle the request
         speak(aiProcess(c))
