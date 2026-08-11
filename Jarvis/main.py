@@ -72,9 +72,8 @@ def processCommand(c):
         subprocess.Popen(["google-chrome"])
     elif "open intelli j" in c.lower():
         subprocess.Popen(["intellij-idea-ultimate"])
-    elif "delete" in c.lower():
-        result = subprocess.run(["/home/aditya/Scripts/script.sh"], capture_output=True, text=True)
-        print(result)           
+    elif "files" in c.lower():
+        subprocess.Popen(["gnome-terminal", "--", "bash", "-c", "./scripts/deletion_script.sh; sleep 1"])
     elif c.lower().startswith("play"):
         song = c.lower().split(" ")[1]
         link = musicLibrary.music[song]

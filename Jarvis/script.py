@@ -1,5 +1,5 @@
 import subprocess
-
+ 
 keyword = input("Enter the file or folder name starting with: ").strip().lower()
 result = subprocess.run(["./scripts/count_results.sh", keyword])
 
