@@ -119,6 +119,10 @@ def file_deletion():
                     content = read_data(file_path) 
                     # speak(f"{content} results deleted in one go.")
                     print(f"{content} results deleted in one go.")
+                    script = get_script_path("find_files_or_folders")
+                    file_path = get_file_path("filename")
+                    file_content = read_data(file_path)
+                    subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
                 elif "no" in ans1.lower():
                     # speak(f"Deletion stopped.")
                     print(f"Deletion stopped.")
@@ -161,6 +165,10 @@ def file_deletion():
                         print(f"{count1} results deleted.")
                         # speak(f"Remaining results: {count-count1}")
                         print(f"Remaining results: {int(count)-count1}")
+                        script = get_script_path("find_files_or_folders")
+                        file_path = get_file_path("filename")
+                        file_content = read_data(file_path)
+                        subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
                         break 
                 elif "no" in ans1.lower():
                     # speak(f"Deletion stopped.")
