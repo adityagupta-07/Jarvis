@@ -10,6 +10,7 @@ from openai import OpenAI
 from gtts import gTTS
 import pygame
 import subprocess
+import pygame 
 
 @contextmanager
 def suppress_stderr():
@@ -29,6 +30,7 @@ engine = pyttsx3.init()
 newsapi = "6d136bfb15f8484392d9c9b790e5db3d"
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 base_dir = os.getenv("base_dir")
+pygame.mixer.init()
 
 def speak_old(text):
     engine.say(text)
@@ -37,10 +39,12 @@ def speak_old(text):
 def speak(text):
     tts = gTTS(text)
     tts.save('temp.mp3')
-    import pygame
-    pygame.mixer.init()
     pygame.mixer.music.load("temp.mp3")
     pygame.mixer.music.play()
+
+    while pygame.mixer.music.get_busy():
+        pygame.time.wait(100)
+
     os.remove("temp.mp3")
 
 def aiProcess(command):
@@ -83,7 +87,8 @@ def read_lines(filepath):
 
 def read_filename():
     script = get_script_path("read_filename")
-    # speak("Enter the name of the file or folder you want to delete, starting with")
+    print("Enter the name of the file or folder you want to delete, starting with")
+    speak("Enter the name of the file or folder you want to delete, starting with")
     subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}"']).wait()
     file_path = get_file_path("filename")
     content = read_data(file_path)
@@ -95,20 +100,27 @@ def file_deletion():
     subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait()
     found_files_count = get_file_path("found_files_count")
     count = read_data(found_files_count)
-    # speak(f"{count} results found.")
-    print(f" {count} results found.")
+    print(f"{count} results found.")
+    speak(f"{count} results found.")
 
     if int(count) > 0:
-        # speak(f"Shall {count} results be deleted? ")
-        ans = input(f"Shall {count} results be deleted? (yes/no): ")
+        print(f"Shall {count} results be deleted? (yes/no): ", end="", flush=True)
+        speak(f"Shall {count} results be deleted? ")
+        # ans = input(f"Shall {count} results be deleted? (yes/no): ")
+        ans = input()
 
         if "yes" in ans.lower():
-            # speak(f"How the results should get deleted? In one go or one by one?")
-            deletion_way = input("How the results should get deleted? \n (In one go: 1) \n (One by one: 2) \n Please choose: ")
+            print("How the results should get deleted? \n (In one go: 1) \n (One by one: 2) \n Please choose: ", end="", flush=True)
+            speak("How the results should get deleted?")
+            speak("In one go?")
+            speak("Or one by one?")
+            # deletion_way = input("How the results should get deleted? \n (In one go: 1) \n (One by one: 2) \n Please choose: ")
+            deletion_way = input()
              
             if int(deletion_way) == 1:
-                # speak(f"Proceed to delete {count} results in one go? (yes/no)")
-                ans1 = input(f"Proceed to delete {count} results in one go? (yes/no): ")
+                print(f"Proceed to delete {count} results in one go? (yes/no): ", end="", flush=True)
+                speak(f"Proceed to delete {count} results in one go? (yes/no)")
+                ans1 = input()
 
                 if "yes" in ans1.lower(): 
                     script = get_script_path("delete1_in_one_go")
@@ -117,22 +129,23 @@ def file_deletion():
                     subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait()
                     file_path = get_file_path("count_of_diog")
                     content = read_data(file_path) 
-                    # speak(f"{content} results deleted in one go.")
                     print(f"{content} results deleted in one go.")
+                    speak(f"{content} results deleted in one go.")
                     script = get_script_path("find_files_or_folders")
                     file_path = get_file_path("filename")
                     file_content = read_data(file_path)
                     subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
                 elif "no" in ans1.lower():
-                    # speak(f"Deletion stopped.")
                     print(f"Deletion stopped.")
+                    speak(f"Deletion stopped.")
                 else:
-                    # speak("Command unclear. Deletion stopped.")
                     print("Command unclear. Deletion stopped.")
+                    speak("Command unclear. Deletion stopped.")
 
             elif int(deletion_way) == 2:
-                # speak(f"Proceed to delete {count} results one by one? (yes/no)")
-                ans1 = input(f"Proceed to delete {count} results one by one? (yes/no): ")
+                print(f"Proceed to delete {count} results one by one? (yes/no): ", end="", flush=True)
+                speak(f"Proceed to delete {count} results one by one? ")
+                ans1 = input()
 
                 if "yes" in ans1.lower(): 
                     count1 = 0
@@ -142,48 +155,51 @@ def file_deletion():
                         for file in data_lines: 
                             file = file.strip()
                             base_name = os.path.basename(file)
-                            # speak(f"{base_name} should be deleted? ") 
-                            ans2 = input(f"'{base_name}' should be deleted? ") 
+                            print(f"'{base_name}' should be deleted? (yes/no): ", end="", flush=True) 
+                            speak(f"{base_name} should be deleted? ") 
+                            ans2 = input()
 
                             if "yes" in ans2.lower():
                                 script = get_script_path("delete_one_file_or_folder")                            
                                 subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file}"']).wait() 
                                 count1 += 1 
-                                print(f"'{base_name}' deleted.")
+                                print(f"File('{base_name}') deleted.")
+                                speak("File deleted.")
                             elif "no" in ans2.lower():
-                                # speak(f"Skipped {base_name}")
-                                print(f"Skipped '{base_name}'.")
+                                print(f"File('{base_name}') skipped.")
+                                speak("File skipped")
                             elif "stop" in ans2.lower():
-                                # speak(f"Deletion stopped.")
                                 print(f"Deletion stopped.")
+                                speak(f"Deletion stopped.")
                                 break
                             else :
-                                # speak("Command unclear. Deletion stopped.")
                                 print("Command unclear. Deletion stopped.")
+                                speak("Command unclear. Deletion stopped.")
                                 break
-                        # speak(f"{count1} results deleted.")
                         print(f"{count1} results deleted.")
-                        # speak(f"Remaining results: {count-count1}")
-                        print(f"Remaining results: {int(count)-count1}")
+                        speak(f"{count1} results deleted.")
+                        remaining = int(count)-int(count1)
+                        print(f"Remaining results: {str(remaining)}")
+                        speak(f"Remaining results: {str(remaining)}")
                         script = get_script_path("find_files_or_folders")
                         file_path = get_file_path("filename")
                         file_content = read_data(file_path)
                         subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
                         break 
                 elif "no" in ans1.lower():
-                    # speak(f"Deletion stopped.")
+                    speak(f"Deletion stopped.")
                     print(f"Deletion stopped.")
                 else:
-                    # speak("Command unclear. Deletion stopped.")
+                    speak("Command unclear. Deletion stopped.")
                     print("Command unclear. Deletion stopped.")
             else:
-                # speak("Command unclear. Deletion stopped.")
+                speak("Command unclear. Deletion stopped.")
                 print("Command unclear. Deletion stopped.")
         elif "no" in ans.lower():
-            # speak(f"Deletion stopped.")
+            speak(f"Deletion stopped.")
             print(f"Deletion stopped.")
         else:
-            # speak("Command unclear. Deletion stopped.")
+            speak("Command unclear. Deletion stopped.")
             print("Command unclear. Deletion stopped.")       
     
 def processCommand(c):
