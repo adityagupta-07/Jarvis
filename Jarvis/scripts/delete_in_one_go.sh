@@ -10,7 +10,7 @@ if [ "$answer" == "yes" ]; then
         rm -rf "$item"
     done <<< "$result"
     echo "$count result/s deleted"
-elif [ "$answer" == "no" ]; then
+elif [ "$answer" == "no" ]; then 
     echo "Deletion stopped"
 else
     echo "Command Unclear. Deletion stopped"

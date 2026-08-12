@@ -19,4 +19,5 @@ if [ "$result" == "" ]; then
 else
    count=$(echo "$result" | wc -l)
 fi
+echo "${result}"
 echo "Found $count result/s."

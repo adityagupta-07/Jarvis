@@ -5,9 +5,7 @@ echo "$count result/s found to delete one by one"
 
 counter=0 
 while read -r item <&3; do # read means "read until \n." and store that in item variable 
-    # read -p "$(basename "$item") should be deleted? (yes/no): " answer
-    echo -n "$(basename "$item") should be deleted? (yes/no): "
-    read answer
+    read -p "$(basename "$item") should be deleted? (yes/no): " answer 
     if [ "$answer" == "yes" ]; then 
         counter=$((counter + 1))
         rm -rf "$item"
