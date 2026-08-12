@@ -1,7 +1,6 @@
 #!/bin/bash
 
-
-result=$(cat "/home/aditya/Coding/Python Porjects - YT -CWH/Python-Mini-Projects/Jarvis/tmp/found_files.txt")
+result=$(find ~/.local/share/Trash/files/ -maxdepth 1 -iname "$1*")
 
 count=0
 if [ "$result" != "" ]; then 

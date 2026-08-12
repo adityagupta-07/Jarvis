@@ -13,6 +13,6 @@ if [ "$result" == "" ]; then
 fi
 
 echo "${result}" > "/home/aditya/Coding/Python Porjects - YT -CWH/Python-Mini-Projects/Jarvis/tmp/found_files.txt"
-echo "${count}" > "/home/aditya/Coding/Python Porjects - YT -CWH/Python-Mini-Projects/Jarvis/tmp/count.txt"
+echo "${count}" > "/home/aditya/Coding/Python Porjects - YT -CWH/Python-Mini-Projects/Jarvis/tmp/found_files_count.txt"
 
 
