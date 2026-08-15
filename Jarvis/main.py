@@ -25,7 +25,7 @@ def suppress_stderr():
         os.close(old_stderr)
 
 load_dotenv()
-# recognizer = sr.Recognizer()
+r = sr.Recognizer()
 engine = pyttsx3.init()
 newsapi = "6d136bfb15f8484392d9c9b790e5db3d"
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -79,15 +79,39 @@ def read_data(filepath):
         data = f.read().strip() 
     return data 
 
+# Function to read data from file (pass file's name only without .txt)
+def read_data1(file_name_to_read_data):
+    file_path0 = get_file_path(file_name_to_read_data)
+    with open(file_path0, "r") as f:
+        data = f.read().strip() 
+    return data 
+
 # Function to read lines 
-def read_lines(filepath):
-    with open(filepath, "r") as f:
+def read_lines1(file_name_to_read_lines):
+    file_path0 = get_file_path(file_name_to_read_lines)
+    with open(file_path0, "r") as f:
         lines = f.readlines()
     return lines
 
+def speech_to_text():
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            with suppress_stderr():
+                with sr.Microphone() as source:
+                    audio1 = r.listen(source, timeout=5, phrase_time_limit=5)
+                    command1 = r.recognize_google(audio1)
+                    print(command1)
+                    return command1
+        except sr.UnknownValueError:
+            print("Didn't catch that, try again...") 
+        except Exception as e:
+            print(f"Recognition error: {e}")
+    return ""  # give up after retries
+
 def read_filename():
     script = get_script_path("read_filename")
-    print("Enter the name of the file or folder you want to delete, starting with")
+    print("Enter the name of the file or folder you want to delete, starting with: ")
     speak("Enter the name of the file or folder you want to delete, starting with")
     subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}"']).wait()
     file_path = get_file_path("filename")
@@ -97,75 +121,81 @@ def read_filename():
 def file_deletion():
     file_content = read_filename() # stores file's name to delete
     script = get_script_path("find_files_or_folders") 
-    subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait()
-    found_files_count = get_file_path("found_files_count")
-    count = read_data(found_files_count)
+    subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
+    count = read_data1("found_files_count")
     print(f"{count} results found.")
-    speak(f"{count} results found.")
+    if int(count) == 0: 
+        speak(f"There is no any file or folder to delete with name {read_data1("filename")}.")
+    else:
+        speak(f"{count} results found.")
 
+    # For "yes", and "no"
+    yes = "remove"
+    no = "do not"
     if int(count) > 0:
         print(f"Shall {count} results be deleted? (yes/no): ", end="", flush=True)
-        speak(f"Shall {count} results be deleted? ")
-        # ans = input(f"Shall {count} results be deleted? (yes/no): ")
-        ans = input()
+        speak(f"Shall {count} results be deleted? ") 
+        # ans = input()
+        ans = speech_to_text()
 
-        if "yes" in ans.lower():
+        if yes in ans.lower():
             print("How the results should get deleted? \n (In one go: 1) \n (One by one: 2) \n Please choose: ", end="", flush=True)
             speak("How the results should get deleted?")
             speak("In one go?")
             speak("Or one by one?")
-            # deletion_way = input("How the results should get deleted? \n (In one go: 1) \n (One by one: 2) \n Please choose: ")
-            deletion_way = input()
+            # deletion_way = input()
+            deletion_way = speech_to_text()
              
-            if int(deletion_way) == 1:
+            # if int(deletion_way) == 1:
+            if "in one go" in deletion_way.lower():
                 print(f"Proceed to delete {count} results in one go? (yes/no): ", end="", flush=True)
-                speak(f"Proceed to delete {count} results in one go? (yes/no)")
-                ans1 = input()
+                speak(f"Proceed to delete {count} results in one go? ")
+                # ans1 = input()
+                ans1 = speech_to_text()
 
-                if "yes" in ans1.lower(): 
-                    script = get_script_path("delete1_in_one_go")
-                    file_path = get_file_path("filename")
-                    file_content = read_data(file_path)
-                    subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait()
-                    file_path = get_file_path("count_of_diog")
-                    content = read_data(file_path) 
-                    print(f"{content} results deleted in one go.")
-                    speak(f"{content} results deleted in one go.")
-                    script = get_script_path("find_files_or_folders")
-                    file_path = get_file_path("filename")
-                    file_content = read_data(file_path)
+                if yes in str(ans1).lower(): 
+                    script = get_script_path("delete1_in_one_go") 
+                    file_content = read_data1("filename")
                     subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
-                elif "no" in ans1.lower():
+                    content = read_data1("count_of_diog") 
+                    print(f"{content} results deleted.")
+                    speak(f"{content} results deleted.")
+                    script = get_script_path("find_files_or_folders") 
+                    file_content = read_data1("filename")
+                    subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
+                elif no in ans1.lower():
                     print(f"Deletion stopped.")
                     speak(f"Deletion stopped.")
                 else:
                     print("Command unclear. Deletion stopped.")
                     speak("Command unclear. Deletion stopped.")
 
-            elif int(deletion_way) == 2:
+            # elif int(deletion_way) == 2:
+            elif "one by one" or "one" in deletion_way.lower():
                 print(f"Proceed to delete {count} results one by one? (yes/no): ", end="", flush=True)
                 speak(f"Proceed to delete {count} results one by one? ")
-                ans1 = input()
+                # ans1 = input()
+                ans1 = speech_to_text()
 
-                if "yes" in ans1.lower(): 
+                if yes in ans1.lower(): 
                     count1 = 0
-                    while True:
-                        file_path = get_file_path("found_files")
-                        data_lines = read_lines(file_path) 
-                        for file in data_lines: 
+                    while True: 
+                        found_files_list = read_lines1("found_files") 
+                        for file in found_files_list: 
                             file = file.strip()
                             base_name = os.path.basename(file)
                             print(f"'{base_name}' should be deleted? (yes/no): ", end="", flush=True) 
                             speak(f"{base_name} should be deleted? ") 
-                            ans2 = input()
+                            # ans2 = input()
+                            ans2 = speech_to_text()
 
-                            if "yes" in ans2.lower():
+                            if yes in ans2.lower():
                                 script = get_script_path("delete_one_file_or_folder")                            
                                 subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file}"']).wait() 
                                 count1 += 1 
                                 print(f"File('{base_name}') deleted.")
                                 speak("File deleted.")
-                            elif "no" in ans2.lower():
+                            elif no in ans2.lower():
                                 print(f"File('{base_name}') skipped.")
                                 speak("File skipped")
                             elif "stop" in ans2.lower():
@@ -176,26 +206,28 @@ def file_deletion():
                                 print("Command unclear. Deletion stopped.")
                                 speak("Command unclear. Deletion stopped.")
                                 break
+
                         print(f"{count1} results deleted.")
                         speak(f"{count1} results deleted.")
                         remaining = int(count)-int(count1)
                         print(f"Remaining results: {str(remaining)}")
                         speak(f"Remaining results: {str(remaining)}")
-                        script = get_script_path("find_files_or_folders")
-                        file_path = get_file_path("filename")
-                        file_content = read_data(file_path)
+                        script = get_script_path("find_files_or_folders") 
+                        file_content = read_data1("filename")
                         subprocess.Popen(["gnome-terminal", "--wait", "--", "bash", "-c", f'"{script}" "{file_content}"']).wait() 
                         break 
-                elif "no" in ans1.lower():
+                elif no in ans1.lower():
                     speak(f"Deletion stopped.")
                     print(f"Deletion stopped.")
                 else:
                     speak("Command unclear. Deletion stopped.")
                     print("Command unclear. Deletion stopped.")
+
             else:
                 speak("Command unclear. Deletion stopped.")
                 print("Command unclear. Deletion stopped.")
-        elif "no" in ans.lower():
+                
+        elif no in ans.lower():
             speak(f"Deletion stopped.")
             print(f"Deletion stopped.")
         else:
@@ -240,28 +272,26 @@ def processCommand(c):
     
 
 if __name__ == "__main__":
-    speak("Initializing Jarvis...")
-    file_deletion()
-    # while True:
-    #     r = sr.Recognizer()
+    speak("Initializing Jarvis...") 
+    while True:  
 
-    #     try:
-    #         with suppress_stderr():
-    #             with sr.Microphone() as source:
-    #                 print("Listening...")
-    #                 audio = r.listen(source, timeout=10, phrase_time_limit=10)
-    #             word = r.recognize_google(audio)
-    #             if ("jarvis" in word.lower()):
-    #                 speak("Yeah")
-    #                 # Listen for command
-    #                 with sr.Microphone() as source:
-    #                     print("Jarvis Active...")
-    #                     # Audio input
-    #                     audio = r.listen(source) # Human speech stored in audio
-    #                     # Speech to text 
-    #                     command = r.recognize_google(audio) # Human speech into text and stored in command
+        try:
+            with suppress_stderr():
+                with sr.Microphone() as source:
+                    print("Listening...")
+                    audio = r.listen(source, timeout=10, phrase_time_limit=10)
+                word = r.recognize_google(audio)
+                if ("jarvis" in word.lower()):
+                    speak("Yeah")
+                    # Listen for command
+                    with sr.Microphone() as source:
+                        print("Jarvis Active...")
+                        # Audio input
+                        audio = r.listen(source) # Human speech stored in audio
+                        # Speech to text 
+                        command = r.recognize_google(audio) # Human speech into text and stored in command
 
-    #                     processCommand(command) # Sending text form of human speech as argument
+                        processCommand(command) # Sending text form of human speech as argument
 
-    #     except Exception as e:
-    #         print("Recognition error: {0}".format(e))
+        except Exception as e:
+            print("Recognition error: {0}".format(e))
